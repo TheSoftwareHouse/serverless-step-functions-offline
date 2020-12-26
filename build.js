@@ -76,8 +76,19 @@ module.exports = {
             return;
         }// end of states
         this.executionLog(`~~~~~~~~~~~~~~~~~~~~~~~~~~~ ${this.currentStateName} started ~~~~~~~~~~~~~~~~~~~~~~~~~~~`);
-        f(event, this.contextObject, this.contextObject.done);
-
+        return new Promise(async (resolve, reject) => {
+            f(event, this.contextObject)
+            .then(data => {
+                this.executionLog(`${this.currentStateName} finished -- ${data}`);
+                this.contextObject.done(null, data);
+                resolve();
+            })
+            .catch(err => {
+                this.executionLog(`Problem with lambda execution ${err}`);
+                this.contextObject.done(err, null);
+                return reject(err);
+            })
+        });
     },
 
     _states(currentState, currentStateName) {
